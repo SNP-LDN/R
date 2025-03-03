@@ -1,0 +1,14 @@
+---
+title: "week06_inPerson"
+output: html_document
+date: "2025-03-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Inline maths: is where the math equations appear in the example, $y = (1+x)^2$.
+
+Display math:
+$$mean = \bar{x} = \frac{1}{n}\sum_{i = 1}^n x_i$$

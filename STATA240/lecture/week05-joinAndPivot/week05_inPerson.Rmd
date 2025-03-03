@@ -1,0 +1,259 @@
+---
+title: "Week05_inPrson"
+output: html_document
+date: "2025-02-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(magrittr)
+official <- read_csv("../../data/madison-weather-official-1869-2023.csv")
+```
+
+```{r}
+official1 = official %>% 
+  mutate(year = year(date),
+         month = month(date, label = TRUE),
+         day = day(date))
+```
+
+> Summarize the data to obtain the average temperature (tavg) per year. Then, make an effective plot of this data to show patterns over time and variation around the main pattern.
+
+```{r}
+official1 %>% group_by(year) %>% summarise(tavg_year = mean(tavg)) %>% 
+  ggplot(mapping = aes(year, tavg_year)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth()
+```
+
+> For each of the 366 unique dates of the year, find the historical date which had the highest maximum temperature on that day of the year. There may be ties, which will lead to slightly more than 366 rows.
+
+```{r}
+official1 %>% group_by(month,day) %>% slice_max(tmax,n=1) %>% select(date,tmax,year,month,day)
+
+```
+
+> Meteorologists often determine weather norms by averaging over a 30-year period. Create a new variable which indicates what 30-year period a given day is part of; starting with 1871-1900, then 1901-1930, up to 1991-2020. You can exclude years before 1871 and after 2020.
+
+```{r}
+official_30_y_p <- official1 %>% mutate(
+  thirty_year_period = case_when(
+    1871 <= year & year<=1900 ~ "1st 30 years period",
+    1901 <= year & year<=1930 ~ "2nd 30 years period",
+    1931 <= year & year<=1960 ~ "3rd 30 years period",
+    1961 <= year & year<=1990 ~ "4th 30 years period",
+    1991 <= year & year<=2020 ~ "5th 30 years period"
+  )
+) %>% filter(!is.na(thirty_year_period))
+
+official_30_y_p <- official1 %>% mutate(
+  thirty_year_period = case_when(
+    1871 <= year & year<=1900 ~ "1st 30 years period",
+    1901 <= year & year<=1930 ~ "2nd 30 years period",
+    1931 <= year & year<=1960 ~ "3rd 30 years period",
+    1961 <= year & year<=1990 ~ "4th 30 years period",
+    1991 <= year & year<=2020 ~ "5th 30 years period"
+  )
+) %>% drop_na(thirty_year_period)
+
+official_30_y_p
+```
+
+> Then, with that 30-year-period variable you just created, calculate within each of the twelve months within each period (e.g. 1 row for all Januarys in 1871-1900, 1 row for all Februarys in 1871-1900… for each month, for each period) the average, maximum, and minimum of tavg.
+
+```{r}
+official1 %>% mutate(
+  thirty_year_period = case_when(
+    1871 <= year & year<=1900 ~ "1st 30 years period",
+    1901 <= year & year<=1930 ~ "2nd 30 years period",
+    1931 <= year & year<=1960 ~ "3rd 30 years period",
+    1961 <= year & year<=1990 ~ "4th 30 years period",
+    1991 <= year & year<=2020 ~ "5th 30 years period"
+  )
+) %>% filter(!is.na(thirty_year_period))
+
+official_30_y_p %>% filter(!is.na(tavg)) %>% group_by(thirty_year_period) %>% summarise(tavg_30_y_p = mean(tavg))
+
+official_30_y_p %>% group_by(thirty_year_period) %>% summarise(tavg_30_y_p = mean(tavg, na.rm = TRUE))
+```
+
+> Make a summary table which shows the proportion of days which had any precipitation in each 30-year period + month combination.
+
+```{r}
+official_30_y_p %>% group_by(thirty_year_period,month) %>% summarise(num_days = n(), prcp_prop = sum(prcp>0)/num_days) %>% ggplot(mapping = aes(x= month,y = prcp_prop))+
+  geom_col()+
+  facet_grid(vars(thirty_year_period))
+```
+
+```{r}
+drinks = tibble(
+  Row = 1:4,
+  Drink = c("Milk Tea", "Espresso", "Latte", "Espresso"),
+  Cafe = c("Happy Tea", "Daily Grind", "Daily Grind", "Bev's Beverages"),
+  Price = c(4, 2, 3, 2)
+)
+
+drinks
+
+discounts = tibble(
+  Row = 1:3,
+  Coupon = c("25%", "50%", "5%"),
+  Cafe = c("Happy Tea", "Daily Grind", "The Roast")
+)
+
+discounts
+```
+## mutating joins
+
+-`left_join()`
+```{r}
+left_join(drinks,discounts,by = "Cafe")
+```
+
+-`right_join()`
+```{r}
+right_join(drinks,discounts,by = "Cafe")
+```
+
+-`full_join()`
+```{r}
+full_join(drinks,discounts,by = "Cafe")
+```
+
+-`inner_join()`
+```{r}
+inner_join(drinks,discounts,by = "Cafe")
+```
+
+```{r}
+left_join(drinks,discounts)
+
+```
+
+```{r}
+discount1 <- discounts %>% rename(Location = Cafe)
+```
+
+```{r}
+left_join(drinks,discount1,join_by(Cafe == Location))
+```
+
+-`semi_join()`
+```{r}
+drinks %>% semi_join(discounts, by = "Cafe")
+
+drinks %>% inner_join(discounts, by = "Cafe")
+```
+
+-`anti_join()`
+```{r}
+drinks %>% anti_join(discounts, by = join_by(Cafe))
+```
+
+## Exercise
+```{r}
+band_instruments
+band_members
+```
+```{r}
+band_instruments %>% inner_join(band_members, by = join_by(name))
+```
+
+## Pivoting
+```{r}
+players = tibble(
+  player = c("Erling Hoaland", "Kevin De Bruyne"),
+  goals = c(36, 7),
+  assists = c(8, 16),
+  games = c(35, 32)
+)
+
+players1 <- players %>% mutate(title = c("player_of_match", "none"), wins = c(T,F))
+
+players
+players1
+```
+- `pivot_longer()`
+```{r}
+players %>% pivot_longer(c(goals, assists, games))
+
+players_long <- players %>% pivot_longer(goals: games, names_to = "Statistic", values_to = "Score")
+```
+```{r}
+players %>% pivot_longer(-player)
+players1 %>% select(-title)  %>% pivot_longer(-player)
+```
+
+-pivot_wide()
+```{r}
+players_long <- players %>% pivot_longer(goals: games, names_to = "Statistic", values_to = "Score")
+
+players_long %>% pivot_wider(names_from = Statistic, values_from = Score)
+
+pivot_longer(players, goals:games) %>% pivot_wider()
+```
+```{r}
+table1
+table2
+```
+
+> what type of dataset is Table1 compared to table2
+
+Table1 is the wider dataset and tablel 2 is the longer dataset
+
+```{r}
+# table1 -> table2
+table1 %>% pivot_longer(c(cases, population), names_to = "type", values_to = "count")
+table1 %>% pivot_longer(-c(country,year), names_to = "type", values_to = "count")
+```
+```{r}
+#table2->table1
+table2 %>% pivot_wider(names_from = type, values_from = count)
+```
+
+```{r}
+mendota <- read_csv("../../data/lake-mendota-winters-2024.csv")
+```
+```{r}
+ggplot(mendota, aes(duration))+
+  geom_histogram(
+    color = "blue",
+    fill = "skyblue"
+  ) +
+  geom_text(
+    x = 82,
+    y = 21,
+    label = "this is the tallest bar->"
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

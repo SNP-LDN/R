@@ -1,0 +1,223 @@
+---
+title: "week04_inPerson"
+output: html_document
+date: "2025-02-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+library(tidyverse)
+library(magrittr)
+```
+
+
+## Pipe operator
+
+- %>% is known as the pipe operator
+
+Windows: `ctrl+shift+M` 
+
+- x %>% f() -> f(x)
+- x %>% f() %>% g() -> g(f(x))
+- x %>% f(y) -> f(x,y)
+
+Example:
+
+$$\sqrt{\frac{(3+4)^2}{7}}$$
+
+```{r}
+3 %>% add(4) %>% raise_to_power(2) %>% divide_by(7) %>% sqrt()
+
+sqrt(add(divide_by(30,10),6))
+30 %>% divide_by(10) %>% add(6) %>% sqrt()
+```
+
+```{r}
+grocery_list <- read_csv("../../data/grocery-list.csv")
+grocery_prices <- read_csv("../../data/grocery-prices.csv")
+```
+```{r}
+produce = grocery_list %>% 
+  left_join(grocery_prices, by = "item") 
+
+
+produce
+```
+
+mutate() adds a new column or columns to the dataframe.
+```{r}
+produce = produce %>% 
+    mutate(cost = price * quantity,
+           sales_tax = 0.05 * cost)
+
+produce
+```
+
+select() reduces the number of columns in the dataframe, by giving it a list of columns to keep or to remove.
+```{r}
+# Will KEEP cost and sales_tax only, removing the rest
+# Notice: Not overwriting produce here, because doing so would reduce produce to just these two columns and get rid of everything else.
+produce %>%
+  select(cost, sales_tax)
+```
+
+You can also tell select() you instead wish to REMOVE the specified columns using the - sign before each name.
+```{r}
+produce %>% 
+  select(-item, -type)
+```
+
+relocate() moves columns around in a dataframe, not removing or adding any.
+```{r}
+produce %>% 
+  relocate(price, quantity, cost, sales_tax)
+
+#You can also choose to move columns to other specific places using the .before or .after arguments.
+
+produce %>% 
+  relocate(item, type, .after = price)
+```
+
+rename() changes the names of columns, using the syntax new_name = old_name.
+```{r}
+produce %>% 
+  rename(pricePerUnit = price,
+         totalCost = cost)
+```
+
+## the row editors
+The following two commands, arrange() and filter(), act upon the ROWS of dataframes, leaving the number and order of columns alone.
+
+arrange() reorders the rows by the value of some variable in the dataframe.
+```{r}
+produce %>% 
+  arrange(cost)
+
+#If you want to go from largest to smallest, use the desc() helper function around the variable.
+produce %>%
+  arrange(desc(item))
+```
+
+filter() keeps rows which satisfy a specified logical condition.
+Recall that “logical conditions” are achieved with the logical operators, such as <, >, and ==, among others.
+```{r}
+produce$type == "fruit"
+produce %>% 
+  filter(type == "fruit")
+
+#More complicated logical conditions can be achieved with the use of the symbols & (read as ‘and’) as well as | (read as ‘or’, top right of the keyboard)
+produce %>% 
+  filter(cost > 2 & cost < 5)
+```
+
+drop_na(columnName1, columnName2, ...) is a shortcut function which gets rid of rows which have NA for columnName1 OR columnName2 or any others listed. The same result can be achieved with a combination of filter and is.na, but this operation is so common a quicker and easier to read/write shortcut was written.
+```{r}
+nrow(starwars)
+
+starwars %>% 
+  drop_na(hair_color)
+
+starwars %>% 
+  drop_na(hair_color) %>% 
+  nrow()
+
+#Here’s the same operation accomplished with filter()
+starwars %>% 
+  filter(!is.na(hair_color))
+```
+
+```{r}
+example = tibble(
+  col1 = c(NA, 2, 3, 4),
+  col2 = c(1, NA, 3, 4),
+  col3 = c(1, 2, NA, 4),
+  col4 = c(1, 2, 3, 4)
+)
+
+example
+
+example %>% drop_na()
+```
+
+
+
+2/14/2025
+summarize() computes “summary expressions” which each take a column or columns and reduce them to one number.
+```{r}
+produce %>% 
+  summarize(totalCost = sum(cost),
+            totalTax = sum(sales_tax))
+
+sum(produce$cost)
+sum(produce$sales_tax)
+```
+
+group_by serves as an instruction for future commands, to evaluate expressions within each group, rather than across the whole dataframe.
+```{r}
+produce %>% 
+  group_by(type)
+
+#find the average price of the fruits in the dataframe, and the average price of vegetables in the dataframe
+produce %>% 
+  filter(type == "fruit") %>% 
+  summarize(totalCost = sum(cost))
+
+produce %>% 
+  filter(type == "vegetable") %>% 
+  summarize(totalCost = sum(cost))
+
+produce %>% 
+  group_by(type) %>%
+  summarize(averagePrice = mean(price))
+
+produce %>% 
+  group_by(type) %>% 
+  summarize(averagePrice = mean(price),
+            lowestCost = min(cost),
+            highestCost = max(cost))
+```
+
+n() returns the number of rows in each defined group.
+```{r}
+produce %>% 
+  group_by(type) %>%
+  summarize(numItems = n(), averagePrice = mean(price))
+```
+
+case_when
+```{r}
+produce2 <- produce%>%
+  mutate(group = case_when(
+    price >= 2 ~ "price above 2",
+    price < 2 & price > 1 ~ "price between 1 and 2",
+    price <= 1 ~ "price below 1"
+  ))
+
+produce2
+```
+
+```{r}
+produce2 %>% group_by(group) %>% mutate(total_spent = sum(cost))
+
+produce2 %>% mutate(total_spent = sum(cost))
+```
+
+## slice_max()
+
+```{r}
+produce2 %>% slice_max(price)
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+```
+

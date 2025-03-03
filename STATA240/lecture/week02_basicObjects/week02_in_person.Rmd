@@ -1,0 +1,188 @@
+---
+title: "week02_in_person"
+output: html_document
+date: "2025-01-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE, warning = TRUE)
+```
+
+
+Basic Object:
+
+- Variables:
+
+```{r}
+a <- 1 # you can also assign values using "="
+A <- 1
+
+a = 2 # redifining varables
+a <- A+3 # you can use other varables to define your varable
+
+b <- -1
+
+x = TRUE
+number = "2"
+
+# food <- "cheese" # this is a character but since it 's not inside of quotation marks, it gets recognized as a varable
+
+
+```
+
+
+- How to know the type of variable?
+"class()"
+
+```{r}
+class(b)
+class(x)
+class(number)
+
+```
+
+# Wed 01/29
+```{r}
+# mathematical operator 
+
+2+3 # addition
+
+2-3 # subtraction
+
+2*3 # multiplication
+
+2/3 # division
+
+2^3 # raised to 
+2**3
+```
+```{r}
+# logical operator
+
+2<5
+5<=5
+```
+Disclaimer: NO operators work with NAs
+
+```{r}
+2+2+3+T
+2+2+3+NA
+
+# logical operator of "and" is &
+# logical operator of "and" is |
+```
+Function:
+```{r}
+sqrt(4)
+sum()
+?sum
+sum(1,2,3,4,5,NA,na.rm = FALSE) #NA
+sum(1,2,3,4,5,NA,na.rm = TRUE) #15
+```
+Vector: is a list of objects that get saved under a variable name wahts of creationg a vector:
+using the function `c()`, combine
+```{r}
+even<- c(2,4,6,8,10)
+class(even)
+
+fruit <- c("apple", "banana", "orange")
+```
+
+```{r}
+random <- c(2,3,55,"Hello", "World")
+
+seq(1,100)
+seq(1,100,2)
+
+?seq
+  
+seq(0,1,length.out = 50)
+reverse <- seq(10,1,by = -1)
+```
+
+- using `:`
+
+```{r}
+1:10
+
+10:1
+
+pi:21
+```
+
+```{r}
+# calling objects using indexes/placeholders
+fruit[1]
+
+reverse[c(2,4,6)]
+
+# new object replacing
+
+fruit <- c(fruit, "mango")
+fruit[5] = "watermelon"
+fruit[2] = "strawberry"
+```
+
+- Mathematical operations:
+```{r}
+# the vectors have to be numeric or logical
+# they have to be of the same length
+firstThreeNum <- 1:3
+secondThreeNum <- 4:6
+
+firstThreeNum + secondThreeNum
+firstThreeNum ^ secondThreeNum
+
+```
+```{r}
+# mathematical operations with uneven lengths of vectors
+
+even
+
+list01 <- 1:20
+
+even +list01
+```
+```{r}
+# checking for an object inside of a vector
+
+fruit == "kiwi"
+
+"kiwi" %in% fruit
+"orange" %in% fruit
+
+sum(seq(1,99,2))
+```
+
+- Dataframe:
+```{r}
+# We create dataframes using the function`tibble()` from the package `tidyverse`
+
+library(tidyverse)
+```
+```{r}
+?tibble
+
+tibble(num = 1:10, "even or odd" = c("odd", "even","odd", "even","odd", "even","odd", "even","odd", "even"), "isprime" = num%in%c(2,3,5,7))
+```
+
+- Calling/loading datasets from the computer onto RStudio using the function `read_csv(path to dataset file on the computer)` from the `tidyverse` package
+```{r}
+mendota <- read_csv("../../data/lake-mendota-winters-2024.csv") # set the correct working directory
+
+
+```
+
+- View(mendota) || head(mendota,10) || glilmpse(mendota) # function to visualize or understand data sate 
+
+```{r}
+# 
+
+mendota$winter
+mendota[ ,1]
+mendota[169, ]
+mendota[169, 2]
+```
+
+
+
